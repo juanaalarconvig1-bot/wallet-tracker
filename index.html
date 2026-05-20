@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Withdrawal Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>" />
+</head>
+<body>
+
+  <div class="app">
+
+    <header class="top-bar">
+      <div class="top-bar-inner">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="28" height="28" rx="8" fill="#111"/>
+            <path d="M8 20L14 8L20 20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 16.5h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Withdrawal Tracker</span>
+        </div>
+        <div class="top-actions">
+          <span id="lastUpdated" class="last-updated">–</span> <span id="statCountdown" style="font-size:12px;color:var(--text3)"></span>
+          <button id="refreshBtn" class="btn-refresh" onclick="fetchAll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Actualizar
+          </button>
+          <button class="btn-add" onclick="toggleAddForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Retiro manual
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="ticker-bar">
+      <div class="ticker-inner" id="tickerContent">
+        <span class="ticker-item"><span class="ticker-net sol">SOL</span> 3haEN5ya…YAyg</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item"><span class="ticker-net eth">ETH</span> 0x4647…55C2</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item"><span class="ticker-net trc">TRC20</span> TPxw…Qn6M</span>
+        <span class="ticker-sep">·</span>
+        <span class="ticker-item" id="tickerStats">Cargando...</span>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total retiros</div>
+          <div class="stat-value" id="statTotal">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Confirmados</div>
+          <div class="stat-value green" id="statOk">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value amber" id="statPend">–</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Próx. actualización</div>
+          <div class="stat-value" id="statUsdt">$0</div>
+        </div>
+      </div>
+
+      <div id="addFormWrapper" class="add-form-wrapper hidden">
+        <div class="add-form">
+          <div class="form-title">Registrar retiro manual</div>
+          <div class="form-row">
+            <div class="fg">
+              <label>Wallet</label>
+              <select id="mfWallet">
+                <option value="sol">SOL — 3haEN5ya…YAyg</option>
+                <option value="eth">ETH — 0x4647…55C2</option>
+                <option value="trc">TRC20 — TPxw…Qn6M</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Monto + token</label>
+              <input type="text" id="mfAmt" placeholder="100 USDT" />
+            </div>
+            <div class="fg">
+              <label>Hash / TxID</label>
+              <input type="text" id="mfHash" placeholder="0x..." />
+            </div>
+            <div class="fg">
+              <label>Estado</label>
+              <select id="mfStatus">
+                <option value="ok">Confirmado</option>
+                <option value="pend">Pendiente</option>
+              </select>
+            </div>
+            <button class="btn-save" onclick="addManual()">Agregar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-row">
+        <input type="text" id="searchBox" class="search-input" placeholder="Buscar por hash, monto, token..." oninput="renderAll()" />
+        <select id="filterNet" class="filter-select" onchange="renderAll()">
+          <option value="all">Todas las redes</option>
+          <option value="sol">Solana</option>
+          <option value="eth">Ethereum</option>
+          <option value="trc">TRON</option>
+        </select>
+        <select id="filterStatus" class="filter-select" onchange="renderAll()">
+          <option value="all">Todos los estados</option>
+          <option value="ok">Confirmados</option>
+          <option value="pend">Pendientes</option>
+        </select>
+      </div>
+
+      <div id="walletsArea"></div>
+
+    </main>
+
+    <footer class="footer">
+      <span>Actualización automática cada 60 s</span>
+      <span>·</span>
+      <a href="https://solscan.io/account/3haEN5yaXJjaDEisdNBWVU8CFUGccvgEVGw7EoJyYAyg" target="_blank">Solscan</a>
+      <span>·</span>
+      <a href="https://etherscan.io/address/0x4647fc3bd5ddEd9b88b3DC677779a23a1ffE55C2" target="_blank">Etherscan</a>
+      <span>·</span>
+      <a href="https://tronscan.org/#/address/TPxwVSUYcxhAn2NtYPwyJMMdFgUSYvQn6M" target="_blank">Tronscan</a>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
