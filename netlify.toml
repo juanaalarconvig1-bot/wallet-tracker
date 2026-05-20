@@ -1,0 +1,23 @@
+[build]
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+[[redirects]]
+  from = "/api/solana"
+  to = "/.netlify/functions/solana"
+  status = 200
+
+[[redirects]]
+  from = "/api/ethereum"
+  to = "/.netlify/functions/ethereum"
+  status = 200
+
+[[redirects]]
+  from = "/api/tron"
+  to = "/.netlify/functions/tron"
+  status = 200
